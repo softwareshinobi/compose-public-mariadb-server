@@ -2,73 +2,13 @@ services:
 
 ##########################################
 ##
-## networking
-##
-##########################################
-
-    public-mariadb-proxy:
-
-        container_name: public-mariadb-proxy
-
-        image: nginxproxy/nginx-proxy:1.6
-
-        restart: unless-stopped
-
-        ports:
-
-            - 80:80
-
-            - 443:443
-
-        volumes:
-
-            - /var/run/docker.sock:/tmp/docker.sock:ro
-
-            - /var/docker/nginx/html:/usr/share/nginx/html
-
-            - /var/docker/nginx/certs:/etc/nginx/certs
-
-            - /var/docker/nginx/vhost:/etc/nginx/vhost.d
-
-        logging:
-
-            options:
-
-                max-size: "10m"
-
-                max-file: "3"
-
-    public-mariadb-letsencrypt:
-
-        container_name: public-mariadb-letsencrypt
-
-        image: jrcs/letsencrypt-nginx-proxy-companion
-
-        restart: unless-stopped
-
-        volumes_from:
-
-            - public-mariadb-proxy
-
-        volumes:
-
-            - /var/run/docker.sock:/var/run/docker.sock
-
-            - /var/docker/nginx/acme:/etc/acme.sh
-
-        environment:
-
-            DEFAULT_EMAIL: the.software.shinobi@gmail.com
-
-##########################################
-##
 ## relational data
 ##
 ##########################################
 
-    public-mariadb-database:
+    mariadb-database-server:
 
-        container_name: public-mariadb-database
+        container_name: mariadb-database-server
 
         image: mariadb:latest
 
@@ -82,29 +22,29 @@ services:
 
             MYSQL_ROOT_PASSWORD: aggiepride
 
-            MYSQL_DATABASE: embaNET
+            MYSQL_DATABASE: shinobi
 
-            MYSQL_USER: embaNET
+            MYSQL_USER: shinobi
 
-            MYSQL_PASSWORD: embaNET
+            MYSQL_PASSWORD: shinobi
 
         volumes:
 
             - /volumes/database:/var/lib/mysql
             
-    public-mariadb-phpmyadmin:
+    mariadb-database-admin:
 
-        container_name: public-mariadb-phpmyadmin
+        container_name: mariadb-database-admin
 
         image: beeyev/phpmyadmin-lightweight
 
         depends_on:
 
-           - public-mariadb-database
+           - mariadb-database-server
 
         links:
 
-           - public-mariadb-database
+           - mariadb-database-server
 
         ports:
 
@@ -112,5 +52,4 @@ services:
 
         environment:
 
-            PMA_HOST: public-mariadb-database
-
+            PMA_HOST: mariadb-database-server
